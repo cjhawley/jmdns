@@ -55,7 +55,6 @@ public class RecordReaper extends DNSTask {
     }
 
     // Remove expired answers from the cache
-    // -------------------------------------
     this.getDns().cleanCache();
   }
 

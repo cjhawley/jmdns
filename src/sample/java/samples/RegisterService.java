@@ -64,17 +64,17 @@ public class RegisterService {
      */
     public static void main(String[] args) {
         // Activate these lines to see log messages of JmDNS
-        boolean log = true;
-        if (log) {
-            ConsoleHandler handler = new ConsoleHandler();
-            handler.setLevel(Level.FINEST);
-            for (Enumeration<String> enumerator = LogManager.getLogManager().getLoggerNames(); enumerator.hasMoreElements();) {
-                String loggerName = enumerator.nextElement();
-                Logger logger = LoggerFactory.getLogger(loggerName);
-                logger.addHandler(handler);
-                logger.setLevel(Level.FINEST);
-            }
-        }
+//        boolean log = true;
+//        if (log) {
+//            ConsoleHandler handler = new ConsoleHandler();
+//            handler.setLevel(Level.FINEST);
+//            for (Enumeration<String> enumerator = LogManager.getLogManager().getLoggerNames(); enumerator.hasMoreElements();) {
+//                String loggerName = enumerator.nextElement();
+//                Logger logger = LoggerFactory.getLogger(loggerName);
+//                logger.addHandler(handler);
+//                logger.setLevel(Level.FINEST);
+//            }
+//        }
 
         try {
             System.out.println("Opening JmDNS...");

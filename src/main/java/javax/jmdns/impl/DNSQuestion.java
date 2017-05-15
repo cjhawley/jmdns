@@ -6,6 +6,7 @@ package javax.jmdns.impl;
 
 import java.net.InetAddress;
 import java.util.Set;
+import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceInfo.Fields;
 import javax.jmdns.impl.JmDNSImpl.ServiceTypeEntry;
@@ -302,9 +303,9 @@ public class DNSQuestion extends DNSEntry {
   protected void addAnswersForServiceInfo(JmDNSImpl jmDNSImpl, Set<DNSRecord> answers,
       ServiceInfoImpl info) {
     if ((info != null) && info.isAnnounced()) {
-      if (this.getName().equalsIgnoreCase(info.getQualifiedName()) || this.getName()
-          .equalsIgnoreCase(info.getType()) || this.getName()
-          .equalsIgnoreCase(info.getTypeWithSubtype())) {
+      if (this.getName().equalsIgnoreCase(info.getQualifiedName()) ||
+          this.getName().equalsIgnoreCase(info.getType()) ||
+          this.getName().equalsIgnoreCase(info.getTypeWithSubtype())) {
         answers.addAll(jmDNSImpl.getLocalHost()
             .answers(this.getRecordClass(), DNSRecordClass.UNIQUE, DNSConstants.DNS_TTL));
         answers.addAll(

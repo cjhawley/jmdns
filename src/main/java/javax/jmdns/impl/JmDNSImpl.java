@@ -1605,16 +1605,8 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
    */
   public void send(DNSOutgoing out) throws IOException {
     if (!out.isEmpty()) {
-      final InetAddress addr;
-      final int port;
-
-      if (out.getDestination() != null) {
-        addr = out.getDestination().getAddress();
-        port = out.getDestination().getPort();
-      } else {
-        addr = _group;
-        port = DNSConstants.MDNS_PORT;
-      }
+      final InetAddress addr = out.getDestination() != null ? out.getDestination().getAddress() : _group;
+      final int port = out.getDestination() != null ? out.getDestination().getPort() : DNSConstants.MDNS_PORT;
 
       byte[] message = out.data();
       final DatagramPacket packet = new DatagramPacket(message, message.length, addr, port);
@@ -1622,17 +1614,15 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
       if (logger.isTraceEnabled()) {
         try {
           final DNSIncoming msg = new DNSIncoming(packet);
-          if (logger.isTraceEnabled()) {
-            logger.trace("send(" + this.getName() + ") JmDNS out:" + msg.print(true));
-          }
+          logger.trace("send(" + this.getName() + ") JmDNS out:" + msg.print(true));
         } catch (final IOException e) {
           logger.debug(getClass().toString(),
               "send(" + this.getName() + ") - JmDNS can not parse what it sends!!!", e);
         }
       }
-      final MulticastSocket ms = _socket;
-      if (ms != null && !ms.isClosed()) {
-        ms.send(packet);
+
+      if (_socket != null && !_socket.isClosed()) {
+        _socket.send(packet);
       }
     }
   }
@@ -1844,9 +1834,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
     }
 
     if (this.isCanceled()) {
-      //
       // All is clear now start the services
-      //
       for (ServiceInfo info : oldServiceInfos) {
         ((ServiceInfoImpl) info).recoverState();
       }
@@ -2064,16 +2052,16 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
    */
   @Override
   public Map<String, ServiceInfo[]> listBySubtype(String type, long timeout) {
-    Map<String, List<ServiceInfo>> map = new HashMap<String, List<ServiceInfo>>(5);
+    Map<String, List<ServiceInfo>> map = new HashMap<>(5);
     for (ServiceInfo info : this.list(type, timeout)) {
       String subtype = info.getSubtype().toLowerCase();
       if (!map.containsKey(subtype)) {
-        map.put(subtype, new ArrayList<ServiceInfo>(10));
+        map.put(subtype, new ArrayList<>(10));
       }
       map.get(subtype).add(info);
     }
 
-    Map<String, ServiceInfo[]> result = new HashMap<String, ServiceInfo[]>(map.size());
+    Map<String, ServiceInfo[]> result = new HashMap<>(map.size());
     for (String subtype : map.keySet()) {
       List<ServiceInfo> infoForSubType = map.get(subtype);
       result.put(subtype, infoForSubType.toArray(new ServiceInfo[infoForSubType.size()]));
@@ -2108,7 +2096,6 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
    * @see #list
    */
   private static class ServiceCollector implements ServiceListener {
-    // private static Logger logger = LoggerFactory.getLogger(ServiceCollector.class.getName());
 
     /**
      * A set of collected service instance names.
@@ -2132,8 +2119,8 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
 
     public ServiceCollector(String type) {
       super();
-      _infos = new ConcurrentHashMap<String, ServiceInfo>();
-      _events = new ConcurrentHashMap<String, ServiceEvent>();
+      _infos = new ConcurrentHashMap<>();
+      _events = new ConcurrentHashMap<>();
       _type = type;
       _needToWaitForInfos = true;
     }
@@ -2196,10 +2183,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
      */
     public ServiceInfo[] list(long timeout) {
       if (_infos.isEmpty() || !_events.isEmpty() || _needToWaitForInfos) {
-        long loops = (timeout / 200L);
-        if (loops < 1) {
-          loops = 1;
-        }
+        long loops = Math.max(timeout / 200L, 1);
         for (int i = 0; i < loops; i++) {
           try {
             Thread.sleep(200);

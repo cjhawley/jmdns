@@ -7,16 +7,9 @@ import java.net.InetAddress;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.apache.commons.lang3.StringUtils;
 
-/**
- *
- */
 public interface NameRegister {
 
-  /**
-   *
-   */
   enum NameType {
     /**
      * This name represents a host name
@@ -30,7 +23,7 @@ public interface NameRegister {
 
   abstract class BaseRegister implements NameRegister {
 
-    protected String incrementNameWithDash(String name) {
+    String incrementNameWithDash(String name) {
       StringBuilder givenName = new StringBuilder(name.length() + 5);
       int hostNameCount = 0;
       int plocal = name.indexOf(".local.");
@@ -109,79 +102,6 @@ public interface NameRegister {
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.NameRegister#checkName(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
-     */
-    @Override
-    public boolean checkName(InetAddress networkInterface, String name, NameType type) {
-      switch (type) {
-        case HOST:
-          String hostname = _hostNames.get(networkInterface);
-          return StringUtils.equals(hostname, name);
-        case SERVICE:
-          Set<String> names = _serviceNames.get(networkInterface);
-          return names != null && names.contains(name);
-        default:
-          // this is trash to keep the compiler happy
-          return false;
-      }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see javax.jmdns.impl.NameRegister#incrementHostName(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
-     */
-    @Override
-    public String incrementName(InetAddress networkInterface, String name, NameType type) {
-      switch (type) {
-        case HOST:
-          return this.incrementNameWithDash(name);
-        case SERVICE:
-          return this.incrementNameWithParentesis(name);
-        default:
-          // this is trash to keep the compiler happy
-          return name;
-      }
-    }
-
-  }
-
-  class UniqueNameAcrossInterface extends BaseRegister {
-
-    /*
-     * (non-Javadoc)
-     * @see javax.jmdns.impl.NameRegister#register(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
-     */
-    @Override
-    public void register(InetAddress networkInterface, String name, NameType type) {
-      switch (type) {
-        case HOST:
-          break;
-        case SERVICE:
-          break;
-        default:
-          // this is trash to keep the compiler happy
-      }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see javax.jmdns.impl.NameRegister#checkName(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
-     */
-    @Override
-    public boolean checkName(InetAddress networkInterface, String name, NameType type) {
-      switch (type) {
-        case HOST:
-          return false;
-        case SERVICE:
-          return false;
-        default:
-          // this is trash to keep the compiler happy
-          return false;
-      }
-    }
-
-    /*
-     * (non-Javadoc)
      * @see javax.jmdns.impl.NameRegister#incrementHostName(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
      */
     @Override
@@ -240,16 +160,6 @@ public interface NameRegister {
    * @param type name type to register
    */
   void register(InetAddress networkInterface, String name, NameType type);
-
-  /**
-   * Checks a name that is defended by this group of mDNS.
-   *
-   * @param networkInterface IP address to handle
-   * @param name name to check
-   * @param type name type to check
-   * @return <code>true</code> if the name is not in conflict, <code>flase</code> otherwise.
-   */
-  boolean checkName(InetAddress networkInterface, String name, NameType type);
 
   /**
    * Increments a name that is defended by this group of mDNS after it has been found in conflict.

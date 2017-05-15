@@ -16,26 +16,11 @@ import javax.jmdns.impl.constants.DNSConstants;
  * @author Werner Randelshofer, Rick Blair, Pierre Frisch
  */
 public abstract class DNSMessage {
-
-  /**
-   *
-   */
   public static final boolean MULTICAST = true;
-
-  /**
-   *
-   */
   public static final boolean UNICAST = false;
 
-  // protected DatagramPacket _packet;
-  // protected int _off;
-  // protected int _len;
-  // protected byte[] _data;
-
   private int _id;
-
   boolean _multicast;
-
   private int _flags;
 
   protected final List<DNSQuestion> _questions;
@@ -61,23 +46,6 @@ public abstract class DNSMessage {
     _authoritativeAnswers = Collections.synchronizedList(new LinkedList<DNSRecord>());
     _additionals = Collections.synchronizedList(new LinkedList<DNSRecord>());
   }
-
-  // public DatagramPacket getPacket() {
-  // return _packet;
-  // }
-  //
-  // public int getOffset() {
-  // return _off;
-  // }
-  //
-  // public int getLength() {
-  // return _len;
-  // }
-  //
-  // public byte[] getData() {
-  // if ( _data == null ) _data = new byte[DNSConstants.MAX_MSG_TYPICAL];
-  // return _data;
-  // }
 
   /**
    * @return message id
@@ -129,7 +97,7 @@ public abstract class DNSMessage {
   }
 
   public List<DNSRecord> getAllAnswers() {
-    List<DNSRecord> aList = new ArrayList<DNSRecord>(
+    List<DNSRecord> aList = new ArrayList<>(
         _answers.size() + _authoritativeAnswers.size() + _additionals.size());
     aList.addAll(_answers);
     aList.addAll(_authoritativeAnswers);

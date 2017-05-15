@@ -11,63 +11,36 @@ package javax.jmdns.impl.constants;
  */
 public enum DNSState {
 
-  /**
-   *
-   */
   PROBING_1("probing 1", StateClass.probing),
-  /**
-   *
-   */
+
   PROBING_2("probing 2", StateClass.probing),
-  /**
-   *
-   */
+
   PROBING_3("probing 3", StateClass.probing),
-  /**
-   *
-   */
+
   ANNOUNCING_1("announcing 1", StateClass.announcing),
-  /**
-   *
-   */
+
   ANNOUNCING_2("announcing 2", StateClass.announcing),
-  /**
-   *
-   */
+
   ANNOUNCED("announced", StateClass.announced),
-  /**
-   *
-   */
+
   CANCELING_1("canceling 1", StateClass.canceling),
-  /**
-   *
-   */
+
   CANCELING_2("canceling 2", StateClass.canceling),
-  /**
-   *
-   */
+
   CANCELING_3("canceling 3", StateClass.canceling),
-  /**
-   *
-   */
+
   CANCELED("canceled", StateClass.canceled),
-  /**
-   *
-   */
+
   CLOSING("closing", StateClass.closing),
-  /**
-   *
-   */
+
   CLOSED("closed", StateClass.closed);
 
   private enum StateClass {
     probing, announcing, announced, canceling, canceled, closing, closed
   }
 
-  // private static Logger logger = LoggerFactory.getLogger(DNSState.class.getName());
 
   private final String _name;
-
   private final StateClass _state;
 
   private DNSState(String name, StateClass state) {

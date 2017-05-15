@@ -94,9 +94,8 @@ public class Responder extends DNSTask {
         : DNSConstants.RESPONSE_MIN_WAIT_INTERVAL + JmDNSImpl.getRandom().nextInt(
             DNSConstants.RESPONSE_MAX_WAIT_INTERVAL - DNSConstants.RESPONSE_MIN_WAIT_INTERVAL + 1)
             - _in.elapseSinceArrival();
-    if (delay < 0) {
-      delay = 0;
-    }
+    delay = Math.max(delay, 0);
+
     if (logger.isTraceEnabled()) {
       logger.trace(this.getName() + "start() Responder chosen delay=" + delay);
     }
@@ -131,14 +130,14 @@ public class Responder extends DNSTask {
 
         // remove known answers, if the ttl is at least half of the correct value. (See Draft Cheshire chapter 7.1.).
         long now = System.currentTimeMillis();
-        for (DNSRecord knownAnswer : _in.getAnswers()) {
-          if (knownAnswer.isStale(now)) {
-            answers.remove(knownAnswer);
-            if (logger.isDebugEnabled()) {
-              logger.debug(this.getName() + "JmDNS Responder Known Answer Removed");
-            }
-          }
-        }
+        _in.getAnswers().stream()
+            .filter(knownAnswer -> knownAnswer.isStale(now))
+            .forEach(knownAnswer -> {
+              answers.remove(knownAnswer);
+              if (logger.isDebugEnabled()) {
+                logger.debug(this.getName() + "JmDNS Responder Known Answer Removed");
+              }
+            });
 
         // respond if we have answers
         if (!answers.isEmpty()) {
@@ -162,9 +161,9 @@ public class Responder extends DNSTask {
 
             }
           }
-            if (!out.isEmpty()) {
-                this.getDns().send(out);
-            }
+          if (!out.isEmpty()) {
+            this.getDns().send(out);
+          }
         }
         // this.cancel();
       } catch (Throwable e) {

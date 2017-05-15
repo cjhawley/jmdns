@@ -18,9 +18,6 @@ import javax.jmdns.impl.constants.DNSConstants;
  */
 public abstract class DNSTask extends TimerTask {
 
-  /**
-   *
-   */
   private final JmDNSImpl _jmDNSImpl;
 
   /**

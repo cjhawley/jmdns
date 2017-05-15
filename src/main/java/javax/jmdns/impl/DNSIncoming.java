@@ -49,7 +49,7 @@ public final class DNSIncoming extends DNSMessage {
      */
     public MessageInputStream(byte[] buffer, int offset, int length) {
       super(buffer, offset, length);
-      _names = new HashMap<Integer, String>();
+      _names = new HashMap<>();
     }
 
     public int readByte() {

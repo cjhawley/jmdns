@@ -332,7 +332,7 @@ public final class DNSOutgoing extends DNSMessage {
    * @return bytes to send.
    */
   public byte[] data() {
-    long now = System.currentTimeMillis(); // System.currentTimeMillis()
+    long now = System.currentTimeMillis();
     _names.clear();
 
     MessageOutputStream message = new MessageOutputStream(_maxUDPPayload, this);
@@ -342,18 +342,12 @@ public final class DNSOutgoing extends DNSMessage {
     message.writeShort(this.getNumberOfAnswers());
     message.writeShort(this.getNumberOfAuthorities());
     message.writeShort(this.getNumberOfAdditionals());
-    for (DNSQuestion question : _questions) {
-      message.writeQuestion(question);
-    }
-    for (DNSRecord record : _answers) {
-      message.writeRecord(record, now);
-    }
-    for (DNSRecord record : _authoritativeAnswers) {
-      message.writeRecord(record, now);
-    }
-    for (DNSRecord record : _additionals) {
-      message.writeRecord(record, now);
-    }
+
+    _questions.forEach(message::writeQuestion);
+    _answers.forEach(record -> message.writeRecord(record, now));
+    _authoritativeAnswers.forEach(record -> message.writeRecord(record, now));
+    _additionals.forEach(record -> message.writeRecord(record, now));
+
     byte[] result = message.toByteArray();
     try {
       message.close();

@@ -68,9 +68,9 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
   private Delegate _delegate;
 
-  public static interface Delegate {
+  public interface Delegate {
 
-    public void textValueUpdated(ServiceInfo target, byte[] value);
+    void textValueUpdated(ServiceInfo target, byte[] value);
 
   }
 
@@ -220,13 +220,9 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
       this._text = info.getTextBytes();
       this._persistent = info.isPersistent();
       Inet6Address[] ipv6Addresses = info.getInet6Addresses();
-      for (Inet6Address address : ipv6Addresses) {
-        this._ipv6Addresses.add(address);
-      }
+      this._ipv6Addresses.addAll(Arrays.asList(ipv6Addresses));
       Inet4Address[] ipv4Addresses = info.getInet4Addresses();
-      for (Inet4Address address : ipv4Addresses) {
-        this._ipv4Addresses.add(address);
-      }
+      this._ipv4Addresses.addAll(Arrays.asList(ipv4Addresses));
     }
     this._state = new ServiceInfoState(this);
   }
@@ -338,7 +334,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     // Instance
     String instance = qualifiedNameMap.getOrDefault(Fields.Instance, "");
-    instance = StringUtils.defaultIfBlank(protocol, "tcp");
+    instance = StringUtils.defaultIfBlank(instance, "tcp");
     instance = removeSeparators(instance);
     checkedQualifiedNameMap.put(Fields.Instance, instance);
 
@@ -695,8 +691,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
   public Enumeration<String> getPropertyNames() {
     Map<String, byte[]> properties = this.getProperties();
     Collection<String> names = (properties != null ? properties.keySet()
-        : Collections.<String>emptySet());
-    return new Vector<String>(names).elements();
+        : Collections.emptySet());
+    return new Vector<>(names).elements();
   }
 
   /**
@@ -736,7 +732,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
    */
   @Override
   public Map<Fields, String> getQualifiedNameMap() {
-    Map<Fields, String> map = new HashMap<Fields, String>(5);
+    Map<Fields, String> map = new HashMap<>(5);
 
     map.put(Fields.Domain, this.getDomain());
     map.put(Fields.Protocol, this.getProtocol());
@@ -772,7 +768,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
    */
   String readUTF(byte data[], int off, int len) {
     int offset = off;
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     for (int end = offset + len; offset < end; ) {
       int ch = data[offset++] & 0xFF;
       switch (ch >> 4) {
@@ -853,7 +849,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
       }
       this._props = properties;
     }
-    return (_props != null ? _props : Collections.<String, byte[]>emptyMap());
+
+    return (_props != null ? _props : Collections.emptyMap());
   }
 
   /**
@@ -887,14 +884,12 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
             if (serverChanged) {
               _ipv4Addresses.clear();
               _ipv6Addresses.clear();
-              for (DNSEntry entry : dnsCache
-                  .getDNSEntryList(_server, DNSRecordType.TYPE_A, DNSRecordClass.CLASS_IN)) {
-                this.updateRecord(dnsCache, now, entry);
-              }
-              for (DNSEntry entry : dnsCache
-                  .getDNSEntryList(_server, DNSRecordType.TYPE_AAAA, DNSRecordClass.CLASS_IN)) {
-                this.updateRecord(dnsCache, now, entry);
-              }
+
+              dnsCache.getDNSEntryList(_server, DNSRecordType.TYPE_A, DNSRecordClass.CLASS_IN)
+                  .forEach(entry -> this.updateRecord(dnsCache, now, entry));
+
+              dnsCache.getDNSEntryList(_server, DNSRecordType.TYPE_AAAA, DNSRecordClass.CLASS_IN)
+                  .forEach(entry -> this.updateRecord(dnsCache, now, entry));
               // We do not want to trigger the listener in this case as it will be triggered if the address resolves.
             } else {
               serviceUpdated = true;
@@ -1196,7 +1191,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
    */
   public Collection<DNSRecord> answers(DNSRecordClass recordClass, boolean unique, int ttl,
       HostInfo localHost) {
-    List<DNSRecord> list = new ArrayList<DNSRecord>();
+    List<DNSRecord> list = new ArrayList<>();
     // [PJYF Dec 6 2011] This is bad hack as I don't know what the spec should really means in this case. i.e. what is the class of our registered services.
     if ((recordClass == DNSRecordClass.CLASS_ANY) || (recordClass == DNSRecordClass.CLASS_IN)) {
       if (this.getSubtype().length() > 0) {

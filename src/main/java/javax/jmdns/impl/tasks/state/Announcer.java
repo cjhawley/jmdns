@@ -5,6 +5,7 @@
 package javax.jmdns.impl.tasks.state;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Timer;
 import javax.jmdns.impl.DNSOutgoing;
 import javax.jmdns.impl.DNSRecord;
@@ -104,12 +105,8 @@ public class Announcer extends DNSStateTask {
    */
   @Override
   protected DNSOutgoing buildOutgoingForDNS(DNSOutgoing out) throws IOException {
-    DNSOutgoing newOut = out;
-    for (DNSRecord answer : this.getDns().getLocalHost()
-        .answers(DNSRecordClass.CLASS_ANY, DNSRecordClass.UNIQUE, this.getTTL())) {
-      newOut = this.addAnswer(newOut, null, answer);
-    }
-    return newOut;
+    return buildOutgoing(this.getDns().getLocalHost()
+        .answers(DNSRecordClass.CLASS_ANY, DNSRecordClass.UNIQUE, this.getTTL()), out);
   }
 
   /*
@@ -119,10 +116,13 @@ public class Announcer extends DNSStateTask {
   @Override
   protected DNSOutgoing buildOutgoingForInfo(ServiceInfoImpl info, DNSOutgoing out)
       throws IOException {
+    return buildOutgoing(info.answers(DNSRecordClass.CLASS_ANY, DNSRecordClass.UNIQUE,
+        this.getTTL(), this.getDns().getLocalHost()), out);
+  }
+
+  private DNSOutgoing buildOutgoing(Collection<DNSRecord> records, DNSOutgoing out) throws IOException {
     DNSOutgoing newOut = out;
-    for (DNSRecord answer : info
-        .answers(DNSRecordClass.CLASS_ANY, DNSRecordClass.UNIQUE, this.getTTL(),
-            this.getDns().getLocalHost())) {
+    for (DNSRecord answer : records) {
       newOut = this.addAnswer(newOut, null, answer);
     }
     return newOut;

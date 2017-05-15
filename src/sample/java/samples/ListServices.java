@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.LogManager;
+import javax.jmdns.NetworkTopologyDiscovery;
 import org.slf4j.Logger;
 
 import javax.jmdns.JmDNS;
@@ -43,22 +44,24 @@ public class ListServices {
         /* Activate these lines to see log messages of JmDNS */
         boolean log = false;
         if (log) {
-            ConsoleHandler handler = new ConsoleHandler();
-            handler.setLevel(Level.FINEST);
-            for (Enumeration<String> enumerator = LogManager.getLogManager().getLoggerNames(); enumerator.hasMoreElements();) {
-                String loggerName = enumerator.nextElement();
-                Logger logger = LoggerFactory.getLogger(loggerName);
-                logger.addHandler(handler);
-                logger.setLevel(Level.FINEST);
-            }
+//            ConsoleHandler handler = new ConsoleHandler();
+//            handler.setLevel(Level.FINEST);
+//            for (Enumeration<String> enumerator = LogManager.getLogManager().getLoggerNames(); enumerator.hasMoreElements();) {
+//                String loggerName = enumerator.nextElement();
+//                Logger logger = LoggerFactory.getLogger(loggerName);
+//                logger.addHandler(handler);
+//                logger.setLevel(Level.FINEST);
+//            }
         }
 
         JmDNS jmdns = null;
         try {
+
+            NetworkTopologyDiscovery discovery;
             jmdns = JmDNS.create();
             while (true) {
-                ServiceInfo[] infos = jmdns.list("_airport._tcp.local.");
-                System.out.println("List _airport._tcp.local.");
+                ServiceInfo[] infos = jmdns.list("_http._tcp.local.");
+                System.out.println("List _http._tcp.local.");
                 for (int i = 0; i < infos.length; i++) {
                     System.out.println(infos[i]);
                 }

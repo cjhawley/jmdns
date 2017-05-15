@@ -4,7 +4,6 @@
 
 package javax.jmdns.impl;
 
-import com.sun.tools.javac.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.jmdns.impl.constants.DNSRecordClass;
 import javax.jmdns.impl.constants.DNSRecordType;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A table of DNS entries. This is a map table which can handle multiple entries with the same
@@ -45,14 +45,8 @@ import javax.jmdns.impl.constants.DNSRecordType;
  * @author Arthur van Hoff, Werner Randelshofer, Rick Blair, Pierre Frisch
  */
 public class DNSCache extends ConcurrentHashMap<String, List<DNSEntry>> {
-
-  // private static Logger logger = LoggerFactory.getLogger(DNSCache.class.getName());
-
   private static final long serialVersionUID = 3024739453186759259L;
 
-  /**
-   *
-   */
   public DNSCache() {
     this(1024);
   }
@@ -74,9 +68,6 @@ public class DNSCache extends ConcurrentHashMap<String, List<DNSEntry>> {
     super(initialCapacity);
   }
 
-  // ====================================================================
-  // Map
-
   /**
    * {@inheritDoc}
    */
@@ -84,8 +75,6 @@ public class DNSCache extends ConcurrentHashMap<String, List<DNSEntry>> {
   protected Object clone() throws CloneNotSupportedException {
     return new DNSCache(this);
   }
-
-  // ====================================================================
 
   /**
    * Returns all entries in the cache
@@ -116,7 +105,7 @@ public class DNSCache extends ConcurrentHashMap<String, List<DNSEntry>> {
   }
 
   private Collection<? extends DNSEntry> _getDNSEntryList(String name) {
-    return this.get(StringUtils.toLowerCase(name));
+    return this.get(StringUtils.lowerCase(name));
   }
 
   /**

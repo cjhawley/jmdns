@@ -18,69 +18,86 @@
 
 package samples;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import java.io.IOException;
-import java.util.logging.ConsoleHandler;
-import org.slf4j.Logger;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Arrays;
+
+import java.util.stream.Stream;
+import javax.jmdns.JmmDNS;
+
 
 import javax.jmdns.JmDNS;
+import javax.jmdns.NetworkTopologyDiscovery;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceListener;
+import javax.jmdns.impl.NetworkTopologyDiscoveryImpl;
+import org.slf4j.LoggerFactory;
 
 /**
- * Sample Code for Service Discovery using JmDNS and a ServiceListener.
- * <p>
- * Run the main method of this class. It listens for HTTP services and lists all changes on System.out.
+ * Sample Code for Service Discovery using JmDNS and a ServiceListener. <p> Run the main method of
+ * this class. It listens for HTTP services and lists all changes on System.out.
  *
  * @author Werner Randelshofer
  */
 public class DiscoverServices {
 
-    static class SampleListener implements ServiceListener {
-        @Override
-        public void serviceAdded(ServiceEvent event) {
-            System.out.println("Service added   : " + event.getName() + "." + event.getType());
-        }
+  static class SampleListener implements ServiceListener {
 
-        @Override
-        public void serviceRemoved(ServiceEvent event) {
-            System.out.println("Service removed : " + event.getName() + "." + event.getType());
-        }
+    @Override
+    public void serviceAdded(ServiceEvent event) {
+      System.out.println("Service added   : " + event.getName() + "." + event.getType());
+      System.out.println(event.getInfo().getApplication() + " " + Arrays
+          .toString(event.getInfo().getInetAddresses()));
 
-        @Override
-        public void serviceResolved(ServiceEvent event) {
-            System.out.println("Service resolved: " + event.getInfo());
-        }
     }
 
-    /**
-     * @param args
-     *            the command line arguments
-     */
-    public static void main(String[] args) {
-        try {
+    @Override
+    public void serviceRemoved(ServiceEvent event) {
+      System.out.println("Service removed : " + event.getName() + "." + event.getType());
+    }
 
-            // Activate these lines to see log messages of JmDNS
-            boolean log = false;
-            if (log) {
-                Logger logger = LoggerFactory.getLogger(JmDNS.class.getName());
-                ConsoleHandler handler = new ConsoleHandler();
-                logger.addHandler(handler);
-                logger.setLevel(Level.FINER);
-                handler.setLevel(Level.FINER);
-            }
+    @Override
+    public void serviceResolved(ServiceEvent event) {
+      System.out.println("Service resolved: " + event.getInfo());
+    }
+  }
 
-            final JmDNS jmdns = JmDNS.create();
-            jmdns.addServiceListener("_http._tcp.local.", new SampleListener());
+  /**
+   * @param args the command line arguments
+   */
+  public static void main(String[] args) {
+    try {
 
-            System.out.println("Press q and Enter, to quit");
-            int b;
-            while ((b = System.in.read()) != -1 && (char) b != 'q') {
+      // Activate these lines to see log messages of JmDNS
+      Logger logger = (Logger) LoggerFactory.getLogger(JmDNS.class.getName());
+      logger.setLevel(Level.INFO);
+
+      NetworkTopologyDiscovery discovery = new NetworkTopologyDiscoveryImpl();
+      Stream.of(discovery.getInetAddresses())
+          .forEach(inetAddr -> System.out.println(inetAddr.getHostAddress()));
+
+      NetworkInterface networkInterface = NetworkInterface.getByName("bridge100");
+      InetAddress inet = networkInterface.getInetAddresses().nextElement();
+
+      final JmDNS jmdns = JmDNS.create(inet);
+
+      //final JmDNS jmdns = JmDNS.create();
+      jmdns.addServiceListener("_http._tcp.local.", new SampleListener());
+
+      // jmdns.requestServiceInfo("");
+
+      System.out.println("Press q and Enter, to quit");
+      int b;
+      while ((b = System.in.read()) != -1 && (char) b != 'q') {
                 /* Stub */
-            }
-            jmdns.close();
-            System.out.println("Done");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+      }
+      jmdns.close();
+      System.out.println("Done");
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+  }
 }

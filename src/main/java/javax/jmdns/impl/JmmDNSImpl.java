@@ -26,6 +26,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.jmdns.JmDNS;
 import javax.jmdns.JmmDNS;
 import javax.jmdns.NetworkTopologyDiscovery;
@@ -92,13 +94,13 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
   public JmmDNSImpl() {
     super();
     _networkListeners = Collections.synchronizedSet(new HashSet<NetworkTopologyListener>());
-    _knownMDNS = new ConcurrentHashMap<InetAddress, JmDNS>();
-    _services = new ConcurrentHashMap<String, ServiceInfo>(20);
+    _knownMDNS = new ConcurrentHashMap<>();
+    _services = new ConcurrentHashMap<>(20);
     _listenerExecutor = Executors
         .newSingleThreadExecutor(new NamedThreadFactory("JmmDNS Listeners"));
     _jmDNSExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("JmmDNS"));
     _timer = new Timer("Multihomed mDNS.Timer", true);
-    _serviceListeners = new ConcurrentHashMap<String, List<ServiceListener>>();
+    _serviceListeners = new ConcurrentHashMap<>();
     _typeListeners = Collections.synchronizedSet(new HashSet<ServiceTypeListener>());
     _serviceTypes = Collections.synchronizedSet(new HashSet<String>());
     (new NetworkChecker(this, NetworkTopologyDiscovery.Factory.getInstance())).start(_timer);
@@ -124,17 +126,11 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
           .newCachedThreadPool(new NamedThreadFactory("JmmDNS.close"));
       try {
         for (final JmDNS mDNS : this.getDNS()) {
-          executor.submit(new Runnable() {
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public void run() {
-              try {
-                mDNS.close();
-              } catch (IOException exception) {
-                // JmDNS never throws this is only because of the closeable interface
-              }
+          executor.submit(() -> {
+            try {
+              mDNS.close();
+            } catch (IOException e) {
+              // JmDNS never throws this is only because of the closeable interface
             }
           });
         }
@@ -162,10 +158,9 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
    */
   @Override
   public String[] getNames() {
-    Set<String> result = new HashSet<String>();
-    for (JmDNS mDNS : this.getDNS()) {
-      result.add(mDNS.getName());
-    }
+    Set<String> result = Stream.of(getDNS())
+        .map(JmDNS::getName).collect(Collectors.toSet());
+
     return result.toArray(new String[result.size()]);
   }
 
@@ -175,10 +170,9 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
    */
   @Override
   public String[] getHostNames() {
-    Set<String> result = new HashSet<String>();
-    for (JmDNS mDNS : this.getDNS()) {
-      result.add(mDNS.getHostName());
-    }
+    Set<String> result = Stream.of(getDNS())
+        .map(JmDNS::getHostName).collect(Collectors.toSet());
+
     return result.toArray(new String[result.size()]);
   }
 
@@ -256,18 +250,11 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
       final boolean persistent, final long timeout) {
     // We need to run this in parallel to respect the timeout.
     final JmDNS[] dnsArray = this.getDNS();
-    final Set<ServiceInfo> result = new HashSet<ServiceInfo>(dnsArray.length);
+    final Set<ServiceInfo> result = new HashSet<>(dnsArray.length);
     if (dnsArray.length > 0) {
-      List<Callable<ServiceInfo>> tasks = new ArrayList<Callable<ServiceInfo>>(dnsArray.length);
+      List<Callable<ServiceInfo>> tasks = new ArrayList<>(dnsArray.length);
       for (final JmDNS mDNS : dnsArray) {
-        tasks.add(new Callable<ServiceInfo>() {
-
-          @Override
-          public ServiceInfo call() throws Exception {
-            return mDNS.getServiceInfo(type, name, persistent, timeout);
-          }
-
-        });
+        tasks.add(() -> mDNS.getServiceInfo(type, name, persistent, timeout));
       }
 
       ExecutorService executor = Executors
@@ -527,12 +514,7 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
       List<Callable<List<ServiceInfo>>> tasks = new ArrayList<Callable<List<ServiceInfo>>>(
           dnsArray.length);
       for (final JmDNS mDNS : dnsArray) {
-        tasks.add(new Callable<List<ServiceInfo>>() {
-          @Override
-          public List<ServiceInfo> call() throws Exception {
-            return Arrays.asList(mDNS.list(type, timeout));
-          }
-        });
+        tasks.add(() -> Arrays.asList(mDNS.list(type, timeout)));
       }
 
       ExecutorService executor = Executors
@@ -586,7 +568,7 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
     for (ServiceInfo info : this.list(type, timeout)) {
       String subtype = info.getSubtype();
       if (!map.containsKey(subtype)) {
-        map.put(subtype, new ArrayList<ServiceInfo>(10));
+        map.put(subtype, new ArrayList<>(10));
       }
       map.get(subtype).add(info);
     }
@@ -641,9 +623,7 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
             final JmDNS dns = JmDNS.create(address);
             if (_knownMDNS.putIfAbsent(address, dns) == null) {
               // We need to register the services and listeners with the new JmDNS
-              final Collection<String> types = _serviceTypes;
               final Collection<ServiceInfo> infos = _services.values();
-              final Collection<ServiceTypeListener> typeListeners = _typeListeners;
               final Map<String, List<ServiceListener>> serviceListeners = _serviceListeners;
               _jmDNSExecutor.submit(new Runnable() {
                 /**
@@ -652,7 +632,7 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
                 @Override
                 public void run() {
                   // Register Types
-                  for (String type : types) {
+                  for (String type : _serviceTypes) {
                     dns.registerServiceType(type);
                   }
                   // Register services
@@ -664,7 +644,7 @@ public class JmmDNSImpl implements JmmDNS, NetworkTopologyListener, ServiceInfoI
                     }
                   }
                   // Add ServiceType Listeners
-                  for (ServiceTypeListener listener : typeListeners) {
+                  for (ServiceTypeListener listener : _typeListeners) {
                     try {
                       dns.addServiceTypeListener(listener);
                     } catch (IOException exception) {

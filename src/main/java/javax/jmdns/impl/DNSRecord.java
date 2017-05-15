@@ -100,17 +100,11 @@ public abstract class DNSRecord extends DNSEntry {
   /**
    * True if this record is suppressed by the answers in a message.
    */
-  boolean suppressedBy(DNSIncoming msg) {
+  public boolean suppressedBy(DNSIncoming msg) {
     try {
-      for (DNSRecord answer : msg.getAllAnswers()) {
-        if (suppressedBy(answer)) {
-          return true;
-        }
-      }
-      return false;
+      return msg.getAllAnswers().stream().anyMatch(this::suppressedBy);
     } catch (ArrayIndexOutOfBoundsException e) {
       logger.warn("suppressedBy() message " + msg + " exception ", e);
-      // msg.print(true);
       return false;
     }
   }
@@ -119,11 +113,8 @@ public abstract class DNSRecord extends DNSEntry {
    * True if this record would be suppressed by an answer. This is the case if this record would not
    * have a significantly longer TTL.
    */
-  boolean suppressedBy(DNSRecord other) {
-    if (this.equals(other) && (other._ttl > _ttl / 2)) {
-      return true;
-    }
-    return false;
+  public boolean suppressedBy(DNSRecord other) {
+    return this.equals(other) && (other._ttl > _ttl / 2);
   }
 
   /**
@@ -364,8 +355,8 @@ public abstract class DNSRecord extends DNSEntry {
     protected void toByteArray(DataOutputStream dout) throws IOException {
       super.toByteArray(dout);
       byte[] buffer = this.getAddress().getAddress();
-      for (int i = 0; i < buffer.length; i++) {
-        dout.writeByte(buffer[i]);
+      for (byte aBuffer : buffer) {
+        dout.writeByte(aBuffer);
       }
     }
 
@@ -897,16 +888,6 @@ public abstract class DNSRecord extends DNSEntry {
     public ServiceEvent getServiceEvent(JmDNSImpl dns) {
       ServiceInfo info = this.getServiceInfo(false);
       ((ServiceInfoImpl) info).setDns(dns);
-      // String domainName = "";
-      // String serviceName = this.getServer();
-      // int index = serviceName.indexOf('.');
-      // if (index > 0)
-      // {
-      // serviceName = this.getServer().substring(0, index);
-      // if (index + 1 < this.getServer().length())
-      // domainName = this.getServer().substring(index + 1);
-      // }
-      // return new ServiceEventImpl(dns, domainName, serviceName, info);
       return new ServiceEventImpl(dns, info.getType(), info.getName(), info);
 
     }
@@ -925,17 +906,9 @@ public abstract class DNSRecord extends DNSEntry {
 
   public static class HostInformation extends DNSRecord {
 
-    String _os;
-    String _cpu;
+    private String _os;
+    private String _cpu;
 
-    /**
-     * @param name
-     * @param recordClass
-     * @param unique
-     * @param ttl
-     * @param cpu
-     * @param os
-     */
     public HostInformation(String name, DNSRecordClass recordClass, boolean unique, int ttl,
         String cpu, String os) {
       super(name, DNSRecordType.TYPE_HINFO, recordClass, unique, ttl);
