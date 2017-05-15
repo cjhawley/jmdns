@@ -50,6 +50,11 @@ The project was originally started in December 2002 by Arthur van Hoff at Strang
 	</licenses>
 	<dependencies>
 		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.5</version>
+		</dependency>
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.16</version>
@@ -78,7 +83,7 @@ The project was originally started in December 2002 by Arthur van Hoff at Strang
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
+				<version>3.6.1</version>
 				<configuration>
 					<source>${jvm.version}</source>
 					<target>${jvm.version}</target>
@@ -219,7 +224,7 @@ The project was originally started in December 2002 by Arthur van Hoff at Strang
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-		<jvm.version>1.6</jvm.version>
+		<jvm.version>1.8</jvm.version>
 	</properties>
 
 	<profiles>
