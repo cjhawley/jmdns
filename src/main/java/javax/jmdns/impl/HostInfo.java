@@ -30,28 +30,20 @@ import org.slf4j.LoggerFactory;
  */
 public class HostInfo implements DNSStatefulObject {
 
-  private static Logger logger = LoggerFactory.getLogger(HostInfo.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(HostInfo.class.getName());
 
-  protected String _name;
-
-  protected InetAddress _address;
-
-  protected NetworkInterface _interfaze;
-
+  private String _name;
+  private InetAddress _address;
+  private NetworkInterface _interfaze;
   private final HostInfoState _state;
 
   private final static class HostInfoState extends DNSStatefulObject.DefaultImplementation {
-
     private static final long serialVersionUID = -8191476803620402088L;
 
-    /**
-     * @param dns
-     */
     public HostInfoState(JmDNSImpl dns) {
       super();
       this.setDns(dns);
     }
-
   }
 
   /**
@@ -192,13 +184,7 @@ public class HostInfo implements DNSStatefulObject {
           // local link.
           result = true;
         }
-        // if (from.isLinkLocalAddress() && (!this.getInetAddress().isLinkLocalAddress())) {
-        // // Ignore linklocal packets on regular interfaces, unless this is
-        // // also a linklocal interface. This is to avoid duplicates. This is
-        // // a terrible hack caused by the lack of an API to get the address
-        // // of the interface on which the packet was received.
-        // result = true;
-        // }
+
         if (from.isLoopbackAddress() && (!this.getInetAddress().isLoopbackAddress())) {
           // Ignore loopback packets on a regular interface unless this is also a loopback interface.
           result = true;

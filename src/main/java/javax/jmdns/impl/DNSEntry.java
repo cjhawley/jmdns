@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class DNSEntry {
 
-  // private static Logger logger = LoggerFactory.getLogger(DNSEntry.class.getName());
   private final String _key;
 
   private final String _name;

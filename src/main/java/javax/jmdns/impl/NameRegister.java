@@ -11,13 +11,10 @@ import java.util.concurrent.ConcurrentMap;
 public interface NameRegister {
 
   enum NameType {
-    /**
-     * This name represents a host name
-     */
+    // This name represents a host name
     HOST,
-    /**
-     * This name represents a service name
-     */
+
+    //This name represents a service name
     SERVICE,
   }
 
@@ -49,7 +46,7 @@ public interface NameRegister {
       return givenName.toString();
     }
 
-    protected String incrementNameWithParentesis(String name) {
+    protected String incrementNameWithParenthesis(String name) {
       StringBuilder givenName = new StringBuilder(name.length() + 5);
       final int l = name.lastIndexOf('(');
       final int r = name.lastIndexOf(')');
@@ -110,7 +107,7 @@ public interface NameRegister {
         case HOST:
           return this.incrementNameWithDash(name);
         case SERVICE:
-          return this.incrementNameWithParentesis(name);
+          return this.incrementNameWithParenthesis(name);
         default:
           // this is trash to keep the compiler happy
           return name;
