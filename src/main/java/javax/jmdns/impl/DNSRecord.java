@@ -20,9 +20,9 @@ import javax.jmdns.ServiceInfo.Fields;
 import javax.jmdns.impl.DNSOutgoing.MessageOutputStream;
 import javax.jmdns.impl.constants.DNSConstants;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.Type;
 
 /**
  * DNS record
@@ -45,7 +45,7 @@ public abstract class DNSRecord extends DNSEntry {
   /**
    * Create a DNSRecord with a name, type, class, and ttl.
    */
-  DNSRecord(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique, int ttl) {
+  DNSRecord(String name, int type, DNSRecordClass recordClass, boolean unique, int ttl) {
     super(name, type, recordClass, unique);
     this._ttl = ttl;
     this._created = System.currentTimeMillis();
@@ -198,12 +198,12 @@ public abstract class DNSRecord extends DNSEntry {
 
     IPv4Address(String name, DNSRecordClass recordClass, boolean unique, int ttl,
         InetAddress addr) {
-      super(name, DNSRecordType.TYPE_A, recordClass, unique, ttl, addr);
+      super(name, Type.A, recordClass, unique, ttl, addr);
     }
 
     IPv4Address(String name, DNSRecordClass recordClass, boolean unique, int ttl,
         byte[] rawAddress) {
-      super(name, DNSRecordType.TYPE_A, recordClass, unique, ttl, rawAddress);
+      super(name, Type.A, recordClass, unique, ttl, rawAddress);
     }
 
     @Override
@@ -242,12 +242,12 @@ public abstract class DNSRecord extends DNSEntry {
 
     IPv6Address(String name, DNSRecordClass recordClass, boolean unique, int ttl,
         InetAddress addr) {
-      super(name, DNSRecordType.TYPE_AAAA, recordClass, unique, ttl, addr);
+      super(name, Type.AAAA, recordClass, unique, ttl, addr);
     }
 
     IPv6Address(String name, DNSRecordClass recordClass, boolean unique, int ttl,
         byte[] rawAddress) {
-      super(name, DNSRecordType.TYPE_AAAA, recordClass, unique, ttl, rawAddress);
+      super(name, Type.AAAA, recordClass, unique, ttl, rawAddress);
     }
 
     @Override
@@ -294,13 +294,13 @@ public abstract class DNSRecord extends DNSEntry {
 
     InetAddress _addr;
 
-    protected Address(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique,
+    protected Address(String name, int type, DNSRecordClass recordClass, boolean unique,
         int ttl, InetAddress addr) {
       super(name, type, recordClass, unique, ttl);
       this._addr = addr;
     }
 
-    protected Address(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique,
+    protected Address(String name, int type, DNSRecordClass recordClass, boolean unique,
         int ttl, byte[] rawAddress) {
       super(name, type, recordClass, unique, ttl);
       try {
@@ -472,7 +472,7 @@ public abstract class DNSRecord extends DNSEntry {
     private final String _alias;
 
     public Pointer(String name, DNSRecordClass recordClass, boolean unique, int ttl, String alias) {
-      super(name, DNSRecordType.TYPE_PTR, recordClass, unique, ttl);
+      super(name, Type.PTR, recordClass, unique, ttl);
       this._alias = alias;
     }
 
@@ -586,7 +586,7 @@ public abstract class DNSRecord extends DNSEntry {
     private final byte[] _text;
 
     public Text(String name, DNSRecordClass recordClass, boolean unique, int ttl, byte text[]) {
-      super(name, DNSRecordType.TYPE_TXT, recordClass, unique, ttl);
+      super(name, Type.TXT, recordClass, unique, ttl);
       this._text = (text != null && text.length > 0 ? text : EMPTY_TXT);
     }
 
@@ -697,7 +697,7 @@ public abstract class DNSRecord extends DNSEntry {
 
     public Service(String name, DNSRecordClass recordClass, boolean unique, int ttl, int priority,
         int weight, int port, String server) {
-      super(name, DNSRecordType.TYPE_SRV, recordClass, unique, ttl);
+      super(name, Type.SRV, recordClass, unique, ttl);
       this._priority = priority;
       this._weight = weight;
       this._port = port;
@@ -911,7 +911,7 @@ public abstract class DNSRecord extends DNSEntry {
 
     public HostInformation(String name, DNSRecordClass recordClass, boolean unique, int ttl,
         String cpu, String os) {
-      super(name, DNSRecordType.TYPE_HINFO, recordClass, unique, ttl);
+      super(name, Type.HINFO, recordClass, unique, ttl);
       _cpu = cpu;
       _os = os;
     }

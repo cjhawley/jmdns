@@ -45,6 +45,7 @@ import javax.jmdns.impl.tasks.DNSTask;
 import javax.jmdns.impl.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.Type;
 
 // REMIND: multiple IP addresses
 
@@ -800,7 +801,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
         byte[] srvBytes = null;
         String server = "";
         DNSEntry serviceEntry = this.getCache()
-            .getDNSEntry(info.getQualifiedName(), DNSRecordType.TYPE_SRV, DNSRecordClass.CLASS_ANY);
+            .getDNSEntry(info.getQualifiedName(), Type.SRV, DNSRecordClass.CLASS_ANY);
         if (serviceEntry instanceof DNSRecord) {
           ServiceInfo cachedServiceEntryInfo = ((DNSRecord) serviceEntry)
               .getServiceInfo(persistent);
@@ -813,7 +814,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
           }
         }
         for (DNSEntry addressEntry : this.getCache()
-            .getDNSEntryList(server, DNSRecordType.TYPE_A, DNSRecordClass.CLASS_ANY)) {
+            .getDNSEntryList(server, Type.A, DNSRecordClass.CLASS_ANY)) {
           if (addressEntry instanceof DNSRecord) {
             ServiceInfo cachedAddressInfo = ((DNSRecord) addressEntry).getServiceInfo(persistent);
             if (cachedAddressInfo != null) {
@@ -825,7 +826,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
           }
         }
         for (DNSEntry addressEntry : this.getCache()
-            .getDNSEntryList(server, DNSRecordType.TYPE_AAAA, DNSRecordClass.CLASS_ANY)) {
+            .getDNSEntryList(server, Type.AAAA, DNSRecordClass.CLASS_ANY)) {
           if (addressEntry instanceof DNSRecord) {
             ServiceInfo cachedAddressInfo = ((DNSRecord) addressEntry).getServiceInfo(persistent);
             if (cachedAddressInfo != null) {
@@ -837,7 +838,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
           }
         }
         DNSEntry textEntry = this.getCache()
-            .getDNSEntry(cachedInfo.getQualifiedName(), DNSRecordType.TYPE_TXT,
+            .getDNSEntry(cachedInfo.getQualifiedName(), Type.TXT,
                 DNSRecordClass.CLASS_ANY);
         if (textEntry instanceof DNSRecord) {
           ServiceInfo cachedTextInfo = ((DNSRecord) textEntry).getServiceInfo(persistent);
@@ -991,7 +992,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
     Collection<DNSEntry> dnsEntryLits = this.getCache().allValues();
     for (DNSEntry entry : dnsEntryLits) {
       final DNSRecord record = (DNSRecord) entry;
-      if (record.getRecordType() == DNSRecordType.TYPE_SRV) {
+      if (record.getRecordType() == Type.SRV) {
         if (record.getKey().endsWith(loType)) {
           // Do not used the record embedded method for generating event this will not work.
           // serviceEvents.add(record.getServiceEvent(this));
@@ -1390,7 +1391,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
       }
       if (unique) {
         for (DNSEntry entry : this.getCache().getDNSEntryList(newRecord.getKey())) {
-          if (newRecord.getRecordType().equals(entry.getRecordType()) && newRecord.getRecordClass()
+          if (newRecord.getRecordType() == entry.getRecordType() && newRecord.getRecordClass()
               .equals(entry.getRecordClass()) && (entry != cachedRecord)) {
             ((DNSRecord) entry).setWillExpireSoon(now);
           }
@@ -1433,7 +1434,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
     }
 
     // Register new service types
-    if (newRecord.getRecordType() == DNSRecordType.TYPE_PTR) {
+    if (newRecord.getRecordType() == Type.PTR) {
       // handle DNSConstants.DNS_META_QUERY records
       boolean typeAdded = false;
       if (newRecord.isServicesDiscoveryMetaQuery()) {
@@ -1486,8 +1487,8 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
 
   /**
    * In case the a record is received before the srv record the ip address would not be set. <p>
-   * Wireshark record: see also file a_record_before_srv.pcapng and {@link
-   * ServiceInfoImplTest#test_ip_address_is_set()} <p> Multicast Domain Name System (response)
+   * Wireshark record: see also file a_record_before_srv.pcapng and
+   * <p> Multicast Domain Name System (response)
    * Transaction ID: 0x0000 Flags: 0x8400 Standard query response, No error Questions: 0 Answer RRs:
    * 2 Authority RRs: 0 Additional RRs: 8 Answers _ibisip_http._tcp.local: type PTR, class IN,
    * DeviceManagementService._ibisip_http._tcp.local _ibisip_http._tcp.local: type PTR, class IN,
@@ -1510,8 +1511,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
     // filter all a records and move them to the end of the list
     // we do not change der order of the order records
     for (DNSRecord answer : allAnswers) {
-      if (answer.getRecordType().equals(DNSRecordType.TYPE_A) || answer.getRecordType()
-          .equals(DNSRecordType.TYPE_AAAA)) {
+      if (answer.getRecordType() == Type.A || answer.getRecordType() == Type.AAAA) {
         arecords.add(answer);
       } else {
         ret.add(answer);

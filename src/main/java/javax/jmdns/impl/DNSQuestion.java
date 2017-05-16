@@ -6,15 +6,14 @@ package javax.jmdns.impl;
 
 import java.net.InetAddress;
 import java.util.Set;
-import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceInfo.Fields;
 import javax.jmdns.impl.JmDNSImpl.ServiceTypeEntry;
 import javax.jmdns.impl.constants.DNSConstants;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.Type;
 
 /**
  * A DNS question.
@@ -30,7 +29,7 @@ public class DNSQuestion extends DNSEntry {
    */
   private static class DNS4Address extends DNSQuestion {
 
-    DNS4Address(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique) {
+    DNS4Address(String name, int type, DNSRecordClass recordClass, boolean unique) {
       super(name, type, recordClass, unique);
     }
 
@@ -57,7 +56,7 @@ public class DNSQuestion extends DNSEntry {
    */
   private static class DNS6Address extends DNSQuestion {
 
-    DNS6Address(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique) {
+    DNS6Address(String name, int type, DNSRecordClass recordClass, boolean unique) {
       super(name, type, recordClass, unique);
     }
 
@@ -84,7 +83,7 @@ public class DNSQuestion extends DNSEntry {
    */
   private static class HostInformation extends DNSQuestion {
 
-    HostInformation(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique) {
+    HostInformation(String name, int type, DNSRecordClass recordClass, boolean unique) {
       super(name, type, recordClass, unique);
     }
   }
@@ -94,7 +93,7 @@ public class DNSQuestion extends DNSEntry {
    */
   private static class Pointer extends DNSQuestion {
 
-    Pointer(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique) {
+    Pointer(String name, int type, DNSRecordClass recordClass, boolean unique) {
       super(name, type, recordClass, unique);
     }
 
@@ -119,12 +118,12 @@ public class DNSQuestion extends DNSEntry {
           if (ipValue.equalsIgnoreCase(hostIPAddress)) {
             if (this.isV4ReverseLookup()) {
               answers.add(jmDNSImpl.getLocalHost()
-                  .getDNSReverseAddressRecord(DNSRecordType.TYPE_A, DNSRecordClass.NOT_UNIQUE,
+                  .getDNSReverseAddressRecord(Type.A, DNSRecordClass.NOT_UNIQUE,
                       DNSConstants.DNS_TTL));
             }
             if (this.isV6ReverseLookup()) {
               answers.add(jmDNSImpl.getLocalHost()
-                  .getDNSReverseAddressRecord(DNSRecordType.TYPE_AAAA, DNSRecordClass.NOT_UNIQUE,
+                  .getDNSReverseAddressRecord(Type.AAAA, DNSRecordClass.NOT_UNIQUE,
                       DNSConstants.DNS_TTL));
             }
           }
@@ -141,7 +140,7 @@ public class DNSQuestion extends DNSEntry {
    */
   private static class Service extends DNSQuestion {
 
-    Service(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique) {
+    Service(String name, int type, DNSRecordClass recordClass, boolean unique) {
       super(name, type, recordClass, unique);
     }
 
@@ -149,14 +148,13 @@ public class DNSQuestion extends DNSEntry {
     public void addAnswers(JmDNSImpl jmDNSImpl, Set<DNSRecord> answers) {
       String loname = this.getName().toLowerCase();
       if (jmDNSImpl.getLocalHost().getName().equalsIgnoreCase(loname)) {
-        // type = DNSConstants.TYPE_A;
         answers.addAll(jmDNSImpl.getLocalHost()
             .answers(this.getRecordClass(), this.isUnique(), DNSConstants.DNS_TTL));
         return;
       }
       // Service type request
       if (jmDNSImpl.getServiceTypes().containsKey(loname)) {
-        DNSQuestion question = new Pointer(this.getName(), DNSRecordType.TYPE_PTR,
+        DNSQuestion question = new Pointer(this.getName(), Type.PTR,
             this.getRecordClass(), this.isUnique());
         question.addAnswers(jmDNSImpl, answers);
         return;
@@ -180,7 +178,7 @@ public class DNSQuestion extends DNSEntry {
    */
   private static class Text extends DNSQuestion {
 
-    Text(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique) {
+    Text(String name, int type, DNSRecordClass recordClass, boolean unique) {
       super(name, type, recordClass, unique);
     }
 
@@ -204,7 +202,7 @@ public class DNSQuestion extends DNSEntry {
    */
   private static class AllRecords extends DNSQuestion {
 
-    AllRecords(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique) {
+    AllRecords(String name, int type, DNSRecordClass recordClass, boolean unique) {
       super(name, type, recordClass, unique);
     }
 
@@ -225,7 +223,7 @@ public class DNSQuestion extends DNSEntry {
       }
       // Service type request
       if (jmDNSImpl.getServiceTypes().containsKey(loname)) {
-        DNSQuestion question = new Pointer(this.getName(), DNSRecordType.TYPE_PTR,
+        DNSQuestion question = new Pointer(this.getName(), Type.PTR,
             this.getRecordClass(), this.isUnique());
         question.addAnswers(jmDNSImpl, answers);
         return;
@@ -245,7 +243,7 @@ public class DNSQuestion extends DNSEntry {
 
   }
 
-  DNSQuestion(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique) {
+  DNSQuestion(String name, int type, DNSRecordClass recordClass, boolean unique) {
     super(name, type, recordClass, unique);
   }
 
@@ -258,24 +256,24 @@ public class DNSQuestion extends DNSEntry {
    * @param unique Request unicast response (Currently not supported in this implementation)
    * @return new question
    */
-  public static DNSQuestion newQuestion(String name, DNSRecordType type, DNSRecordClass recordClass,
+  public static DNSQuestion newQuestion(String name, int type, DNSRecordClass recordClass,
       boolean unique) {
     switch (type) {
-      case TYPE_A:
+      case Type.A:
         return new DNS4Address(name, type, recordClass, unique);
-      case TYPE_A6:
+      case Type.A6:
         return new DNS6Address(name, type, recordClass, unique);
-      case TYPE_AAAA:
+      case Type.AAAA:
         return new DNS6Address(name, type, recordClass, unique);
-      case TYPE_ANY:
+      case Type.ANY:
         return new AllRecords(name, type, recordClass, unique);
-      case TYPE_HINFO:
+      case Type.HINFO:
         return new HostInformation(name, type, recordClass, unique);
-      case TYPE_PTR:
+      case Type.PTR:
         return new Pointer(name, type, recordClass, unique);
-      case TYPE_SRV:
+      case Type.SRV:
         return new Service(name, type, recordClass, unique);
-      case TYPE_TXT:
+      case Type.TXT:
         return new Text(name, type, recordClass, unique);
       default:
         return new DNSQuestion(name, type, recordClass, unique);

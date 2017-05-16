@@ -136,7 +136,7 @@ public class DNSCache extends ConcurrentHashMap<String, List<DNSEntry>> {
    *
    * @return DNSEntry
    */
-  public DNSEntry getDNSEntry(String name, DNSRecordType type, DNSRecordClass recordClass) {
+  public DNSEntry getDNSEntry(String name, int type, DNSRecordClass recordClass) {
     DNSEntry result = null;
     Collection<? extends DNSEntry> entryList = this._getDNSEntryList(name);
     if (entryList != null) {
@@ -157,19 +157,14 @@ public class DNSCache extends ConcurrentHashMap<String, List<DNSEntry>> {
    *
    * @return list of entries
    */
-  public Collection<? extends DNSEntry> getDNSEntryList(String name, DNSRecordType type,
+  public Collection<? extends DNSEntry> getDNSEntryList(String name, int type,
       DNSRecordClass recordClass) {
     Collection<? extends DNSEntry> entryList = this._getDNSEntryList(name);
     if (entryList != null) {
       synchronized (entryList) {
         entryList = new ArrayList<DNSEntry>(entryList);
-        for (Iterator<? extends DNSEntry> i = entryList.iterator(); i.hasNext(); ) {
-          DNSEntry testDNSEntry = i.next();
-          if (!testDNSEntry.matchRecordType(type) || (!testDNSEntry
-              .matchRecordClass(recordClass))) {
-            i.remove();
-          }
-        }
+        entryList.removeIf(testDNSEntry -> !testDNSEntry.matchRecordType(type) || (!testDNSEntry
+            .matchRecordClass(recordClass)));
       }
     } else {
       entryList = Collections.emptyList();

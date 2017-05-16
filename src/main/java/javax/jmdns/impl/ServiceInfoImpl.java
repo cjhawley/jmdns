@@ -29,12 +29,12 @@ import javax.jmdns.impl.DNSRecord.Pointer;
 import javax.jmdns.impl.DNSRecord.Service;
 import javax.jmdns.impl.DNSRecord.Text;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
 import javax.jmdns.impl.constants.DNSState;
 import javax.jmdns.impl.tasks.DNSTask;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.Type;
 
 /**
  * JmDNS service information.
@@ -861,19 +861,19 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
     if ((rec instanceof DNSRecord) && !rec.isExpired(now)) {
       boolean serviceUpdated = false;
       switch (rec.getRecordType()) {
-        case TYPE_A: // IPv4
+        case Type.A: // IPv4
           if (rec.getName().equalsIgnoreCase(this.getServer())) {
             _ipv4Addresses.add((Inet4Address) ((DNSRecord.Address) rec).getAddress());
             serviceUpdated = true;
           }
           break;
-        case TYPE_AAAA: // IPv6
+        case Type.AAAA: // IPv6
           if (rec.getName().equalsIgnoreCase(this.getServer())) {
             _ipv6Addresses.add((Inet6Address) ((DNSRecord.Address) rec).getAddress());
             serviceUpdated = true;
           }
           break;
-        case TYPE_SRV:
+        case Type.SRV:
           if (rec.getName().equalsIgnoreCase(this.getQualifiedName())) {
             DNSRecord.Service srv = (DNSRecord.Service) rec;
             boolean serverChanged = (_server == null) || !_server.equalsIgnoreCase(srv.getServer());
@@ -885,10 +885,10 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
               _ipv4Addresses.clear();
               _ipv6Addresses.clear();
 
-              dnsCache.getDNSEntryList(_server, DNSRecordType.TYPE_A, DNSRecordClass.CLASS_IN)
+              dnsCache.getDNSEntryList(_server, Type.A, DNSRecordClass.CLASS_IN)
                   .forEach(entry -> this.updateRecord(dnsCache, now, entry));
 
-              dnsCache.getDNSEntryList(_server, DNSRecordType.TYPE_AAAA, DNSRecordClass.CLASS_IN)
+              dnsCache.getDNSEntryList(_server, Type.AAAA, DNSRecordClass.CLASS_IN)
                   .forEach(entry -> this.updateRecord(dnsCache, now, entry));
               // We do not want to trigger the listener in this case as it will be triggered if the address resolves.
             } else {
@@ -896,7 +896,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
             }
           }
           break;
-        case TYPE_TXT:
+        case Type.TXT:
           if (rec.getName().equalsIgnoreCase(this.getQualifiedName())) {
             DNSRecord.Text txt = (DNSRecord.Text) rec;
             _text = txt.getText();
@@ -904,7 +904,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
             serviceUpdated = true;
           }
           break;
-        case TYPE_PTR:
+        case Type.PTR:
           if ((this.getSubtype().length() == 0) && (rec.getSubtype().length() != 0)) {
             _subtype = rec.getSubtype();
             serviceUpdated = true;

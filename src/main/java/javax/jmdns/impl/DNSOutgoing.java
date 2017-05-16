@@ -146,13 +146,13 @@ public final class DNSOutgoing extends DNSMessage {
 
     void writeQuestion(DNSQuestion question) {
       writeName(question.getName());
-      writeShort(question.getRecordType().indexValue());
+      writeShort(question.getRecordType());
       writeShort(question.getRecordClass().indexValue());
     }
 
     void writeRecord(DNSRecord rec, long now) {
       writeName(rec.getName());
-      writeShort(rec.getRecordType().indexValue());
+      writeShort(rec.getRecordType());
       writeShort(rec.getRecordClass().indexValue() | ((rec.isUnique() && _out.isMulticast())
           ? DNSRecordClass.CLASS_UNIQUE : 0));
       writeInt((now == 0) ? rec.getTTL() : rec.getRemainingTTL(now));

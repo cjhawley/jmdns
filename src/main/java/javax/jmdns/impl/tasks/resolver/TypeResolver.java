@@ -12,7 +12,7 @@ import javax.jmdns.impl.JmDNSImpl;
 import javax.jmdns.impl.JmDNSImpl.ServiceTypeEntry;
 import javax.jmdns.impl.constants.DNSConstants;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
+import org.xbill.DNS.Type;
 
 /**
  * Helper class to resolve service types.
@@ -64,7 +64,7 @@ public class TypeResolver extends DNSResolverTask {
   @Override
   protected DNSOutgoing addQuestions(DNSOutgoing out) throws IOException {
     return this.addQuestion(out, DNSQuestion
-        .newQuestion("_services._dns-sd._udp.local.", DNSRecordType.TYPE_PTR,
+        .newQuestion("_services._dns-sd._udp.local.", Type.PTR,
             DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE));
   }
 

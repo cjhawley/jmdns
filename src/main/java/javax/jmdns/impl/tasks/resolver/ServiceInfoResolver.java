@@ -12,7 +12,7 @@ import javax.jmdns.impl.DNSRecord;
 import javax.jmdns.impl.JmDNSImpl;
 import javax.jmdns.impl.ServiceInfoImpl;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
+import org.xbill.DNS.Type;
 
 /**
  * The ServiceInfoResolver queries up to three times consecutively for a service info, and then
@@ -30,7 +30,7 @@ public class ServiceInfoResolver extends DNSResolverTask {
     this._info = info;
     info.setDns(this.getDns());
     this.getDns().addListener(info, DNSQuestion
-        .newQuestion(info.getQualifiedName(), DNSRecordType.TYPE_ANY, DNSRecordClass.CLASS_IN,
+        .newQuestion(info.getQualifiedName(), Type.ANY, DNSRecordClass.CLASS_IN,
             DNSRecordClass.NOT_UNIQUE));
   }
 
@@ -67,16 +67,16 @@ public class ServiceInfoResolver extends DNSResolverTask {
     if (!_info.hasData()) {
       long now = System.currentTimeMillis();
       newOut = this.addAnswer(newOut, (DNSRecord) this.getDns().getCache()
-              .getDNSEntry(_info.getQualifiedName(), DNSRecordType.TYPE_SRV, DNSRecordClass.CLASS_IN), now);
+              .getDNSEntry(_info.getQualifiedName(), Type.SRV, DNSRecordClass.CLASS_IN), now);
       newOut = this.addAnswer(newOut, (DNSRecord) this.getDns().getCache()
-              .getDNSEntry(_info.getQualifiedName(), DNSRecordType.TYPE_TXT, DNSRecordClass.CLASS_IN), now);
+              .getDNSEntry(_info.getQualifiedName(), Type.TXT, DNSRecordClass.CLASS_IN), now);
       if (_info.getServer().length() > 0) {
         for (DNSEntry addressEntry : this.getDns().getCache()
-            .getDNSEntryList(_info.getServer(), DNSRecordType.TYPE_A, DNSRecordClass.CLASS_IN)) {
+            .getDNSEntryList(_info.getServer(), Type.A, DNSRecordClass.CLASS_IN)) {
           newOut = this.addAnswer(newOut, (DNSRecord) addressEntry, now);
         }
         for (DNSEntry addressEntry : this.getDns().getCache()
-            .getDNSEntryList(_info.getServer(), DNSRecordType.TYPE_AAAA, DNSRecordClass.CLASS_IN)) {
+            .getDNSEntryList(_info.getServer(), Type.AAAA, DNSRecordClass.CLASS_IN)) {
           newOut = this.addAnswer(newOut, (DNSRecord) addressEntry, now);
         }
       }
@@ -93,17 +93,17 @@ public class ServiceInfoResolver extends DNSResolverTask {
     DNSOutgoing newOut = out;
     if (!_info.hasData()) {
       newOut = this.addQuestion(newOut, DNSQuestion
-          .newQuestion(_info.getQualifiedName(), DNSRecordType.TYPE_SRV, DNSRecordClass.CLASS_IN,
+          .newQuestion(_info.getQualifiedName(), Type.SRV, DNSRecordClass.CLASS_IN,
               DNSRecordClass.NOT_UNIQUE));
       newOut = this.addQuestion(newOut, DNSQuestion
-          .newQuestion(_info.getQualifiedName(), DNSRecordType.TYPE_TXT, DNSRecordClass.CLASS_IN,
+          .newQuestion(_info.getQualifiedName(), Type.TXT, DNSRecordClass.CLASS_IN,
               DNSRecordClass.NOT_UNIQUE));
       if (_info.getServer().length() > 0) {
         newOut = this.addQuestion(newOut, DNSQuestion
-            .newQuestion(_info.getServer(), DNSRecordType.TYPE_A, DNSRecordClass.CLASS_IN,
+            .newQuestion(_info.getServer(), Type.A, DNSRecordClass.CLASS_IN,
                 DNSRecordClass.NOT_UNIQUE));
         newOut = this.addQuestion(newOut, DNSQuestion
-            .newQuestion(_info.getServer(), DNSRecordType.TYPE_AAAA, DNSRecordClass.CLASS_IN,
+            .newQuestion(_info.getServer(), Type.AAAA, DNSRecordClass.CLASS_IN,
                 DNSRecordClass.NOT_UNIQUE));
       }
     }

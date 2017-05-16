@@ -13,10 +13,10 @@ import javax.jmdns.impl.JmDNSImpl;
 import javax.jmdns.impl.ServiceInfoImpl;
 import javax.jmdns.impl.constants.DNSConstants;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
 import javax.jmdns.impl.constants.DNSState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.Type;
 
 /**
  * The Prober sends three consecutive probes for all service infos that needs probing as well as for
@@ -122,7 +122,7 @@ public class Prober extends DNSStateTask {
   protected DNSOutgoing buildOutgoingForDNS(DNSOutgoing out) throws IOException {
     DNSOutgoing newOut = out;
     newOut.addQuestion(DNSQuestion
-        .newQuestion(this.getDns().getLocalHost().getName(), DNSRecordType.TYPE_ANY,
+        .newQuestion(this.getDns().getLocalHost().getName(), Type.ANY,
             DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE));
     for (DNSRecord answer : this.getDns().getLocalHost()
         .answers(DNSRecordClass.CLASS_ANY, DNSRecordClass.NOT_UNIQUE, this.getTTL())) {
@@ -140,7 +140,7 @@ public class Prober extends DNSStateTask {
       throws IOException {
     DNSOutgoing newOut = out;
     newOut = this.addQuestion(newOut, DNSQuestion
-        .newQuestion(info.getQualifiedName(), DNSRecordType.TYPE_ANY, DNSRecordClass.CLASS_IN,
+        .newQuestion(info.getQualifiedName(), Type.ANY, DNSRecordClass.CLASS_IN,
             DNSRecordClass.NOT_UNIQUE));
     // the "unique" flag should be not set here because these answers haven't been proven unique yet this means the record will not exactly match the announcement record
     newOut = this.addAuthoritativeAnswer(newOut,

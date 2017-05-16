@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Map;
 import javax.jmdns.ServiceInfo.Fields;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -27,7 +26,7 @@ public abstract class DNSEntry {
 
   private final String _type;
 
-  private final DNSRecordType _recordType;
+  private final int _recordType;
 
   private final DNSRecordClass _dnsClass;
 
@@ -38,7 +37,7 @@ public abstract class DNSEntry {
   /**
    * Create an entry.
    */
-  DNSEntry(String name, DNSRecordType type, DNSRecordClass recordClass, boolean unique) {
+  DNSEntry(String name, int type, DNSRecordClass recordClass, boolean unique) {
     _name = name;
     // _key = (name != null ? name.trim().toLowerCase() : null);
     _recordType = type;
@@ -64,7 +63,7 @@ public abstract class DNSEntry {
     if (obj instanceof DNSEntry) {
       DNSEntry other = (DNSEntry) obj;
       result =
-          this.getKey().equals(other.getKey()) && this.getRecordType().equals(other.getRecordType())
+          this.getKey().equals(other.getKey()) && this.getRecordType() == other.getRecordType()
               && this.getRecordClass() == other.getRecordClass();
     }
     return result;
@@ -107,8 +106,8 @@ public abstract class DNSEntry {
    *
    * @return <code>true</code> if the two entries have compatible type, <code>false</code> otherwise
    */
-  public boolean matchRecordType(DNSRecordType recordType) {
-    return this.getRecordType().equals(recordType);
+  public boolean matchRecordType(int recordType) {
+    return this.getRecordType()== recordType;
   }
 
   /**
@@ -148,8 +147,8 @@ public abstract class DNSEntry {
   /**
    * @return record type
    */
-  public DNSRecordType getRecordType() {
-    return (_recordType != null ? _recordType : DNSRecordType.TYPE_IGNORE);
+  public int getRecordType() {
+    return _recordType;
   }
 
   /**
@@ -242,7 +241,7 @@ public abstract class DNSEntry {
    */
   protected void toByteArray(DataOutputStream dout) throws IOException {
     dout.write(this.getName().getBytes("UTF8"));
-    dout.writeShort(this.getRecordType().indexValue());
+    dout.writeShort(this.getRecordType());
     dout.writeShort(this.getRecordClass().indexValue());
   }
 
@@ -290,7 +289,7 @@ public abstract class DNSEntry {
    */
   @Override
   public int hashCode() {
-    return this.getKey().hashCode() + this.getRecordType().indexValue() + this.getRecordClass()
+    return this.getKey().hashCode() + this.getRecordType() + this.getRecordClass()
         .indexValue();
   }
 

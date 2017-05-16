@@ -12,7 +12,7 @@ import javax.jmdns.impl.DNSRecord;
 import javax.jmdns.impl.JmDNSImpl;
 import javax.jmdns.impl.constants.DNSConstants;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
+import org.xbill.DNS.Type;
 
 /**
  * The ServiceResolver queries three times consecutively for services of a given type, and then
@@ -63,7 +63,7 @@ public class ServiceResolver extends DNSResolverTask {
   protected DNSOutgoing addQuestions(DNSOutgoing out) throws IOException {
     DNSOutgoing newOut = out;
     newOut = this.addQuestion(newOut, DNSQuestion
-        .newQuestion(_type, DNSRecordType.TYPE_PTR, DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE));
+        .newQuestion(_type, Type.PTR, DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE));
     return newOut;
   }
 

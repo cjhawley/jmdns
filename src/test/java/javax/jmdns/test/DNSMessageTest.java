@@ -16,9 +16,9 @@ import javax.jmdns.impl.DNSQuestion;
 import javax.jmdns.impl.DNSRecord;
 import javax.jmdns.impl.constants.DNSConstants;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
 
 import org.junit.Test;
+import org.xbill.DNS.Type;
 
 /**
  *
@@ -49,7 +49,7 @@ public class DNSMessageTest {
         String serviceName = "_00000000-0b44-f234-48c8-071c565644b3._sub._home-sharing._tcp.local.";
         DNSOutgoing out = new DNSOutgoing(DNSConstants.FLAGS_QR_QUERY);
         assertNotNull("Could not create the outgoing message", out);
-        out.addQuestion(DNSQuestion.newQuestion(serviceName, DNSRecordType.TYPE_ANY, DNSRecordClass.CLASS_IN, true));
+        out.addQuestion(DNSQuestion.newQuestion(serviceName, Type.ANY, DNSRecordClass.CLASS_IN, true));
         byte[] data = out.data();
         assertNotNull("Could not encode the outgoing message", data);
         byte[] expected = new byte[] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x25, 0x5f, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x2d, 0x30, 0x62, 0x34, 0x34, 0x2d, 0x66, 0x32, 0x33, 0x34, 0x2d, 0x34, 0x38, 0x63, 0x38,
@@ -73,7 +73,7 @@ public class DNSMessageTest {
         String serviceName = "Pierre." + serviceType;
         DNSOutgoing out = new DNSOutgoing(DNSConstants.FLAGS_QR_RESPONSE | DNSConstants.FLAGS_AA, false);
         assertNotNull("Could not create the outgoing message", out);
-        out.addQuestion(DNSQuestion.newQuestion(serviceName, DNSRecordType.TYPE_ANY, DNSRecordClass.CLASS_IN, true));
+        out.addQuestion(DNSQuestion.newQuestion(serviceName, Type.ANY, DNSRecordClass.CLASS_IN, true));
         long now = (new Date()).getTime();
         out.addAnswer(new DNSRecord.Pointer(serviceType, DNSRecordClass.CLASS_IN, true, DNSConstants.DNS_TTL, serviceName), now);
         out.addAuthorativeAnswer(new DNSRecord.Service(serviceType, DNSRecordClass.CLASS_IN, true, DNSConstants.DNS_TTL, 1, 20, 8080, "panoramix.local."));

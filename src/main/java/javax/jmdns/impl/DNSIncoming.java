@@ -14,10 +14,10 @@ import javax.jmdns.impl.constants.DNSConstants;
 import javax.jmdns.impl.constants.DNSLabel;
 import javax.jmdns.impl.constants.DNSOptionCode;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
 import javax.jmdns.impl.constants.DNSResultCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.Type;
 
 /**
  * Parse an incoming DNS message into its components.
@@ -297,8 +297,8 @@ public final class DNSIncoming extends DNSMessage {
 
   private DNSQuestion readQuestion() {
     String domain = _messageInputStream.readName();
-    DNSRecordType type = DNSRecordType.typeForIndex(_messageInputStream.readUnsignedShort());
-    if (type == DNSRecordType.TYPE_IGNORE) {
+    int type = _messageInputStream.readUnsignedShort();
+    if (type < 0 || type > 0xFFFF) {
       logger.warn("Could not find record type: " + this.print(true));
     }
     int recordClassIndex = _messageInputStream.readUnsignedShort();
@@ -309,14 +309,14 @@ public final class DNSIncoming extends DNSMessage {
 
   private DNSRecord readAnswer(InetAddress source) {
     String domain = _messageInputStream.readName();
-    DNSRecordType type = DNSRecordType.typeForIndex(_messageInputStream.readUnsignedShort());
-    if (type == DNSRecordType.TYPE_IGNORE) {
+    int type = _messageInputStream.readUnsignedShort();
+    if (type < 0 || type > 0xFFFF) {
       logger.warn("Could not find record type. domain: " + domain + "\n" + this.print(true));
     }
     int recordClassIndex = _messageInputStream.readUnsignedShort();
-    DNSRecordClass recordClass = (type == DNSRecordType.TYPE_OPT ? DNSRecordClass.CLASS_UNKNOWN
+    DNSRecordClass recordClass = (type == Type.OPT ? DNSRecordClass.CLASS_UNKNOWN
         : DNSRecordClass.classForIndex(recordClassIndex));
-    if ((recordClass == DNSRecordClass.CLASS_UNKNOWN) && (type != DNSRecordType.TYPE_OPT)) {
+    if ((recordClass == DNSRecordClass.CLASS_UNKNOWN) && (type != Type.OPT)) {
       logger.warn("Could not find record class. domain: " + domain + " type: " + type + "\n" + this
           .print(true));
     }
@@ -326,18 +326,17 @@ public final class DNSIncoming extends DNSMessage {
     DNSRecord rec = null;
 
     switch (type) {
-      case TYPE_A: // IPv4
+      case Type.A: // IPv4
         rec = new DNSRecord.IPv4Address(domain, recordClass, unique, ttl,
             _messageInputStream.readBytes(len));
         break;
-      case TYPE_AAAA: // IPv6
+      case Type.AAAA: // IPv6
         rec = new DNSRecord.IPv6Address(domain, recordClass, unique, ttl,
             _messageInputStream.readBytes(len));
         break;
-      case TYPE_CNAME:
-      case TYPE_PTR:
-        String service = "";
-        service = _messageInputStream.readName();
+      case Type.CNAME:
+      case Type.PTR:
+        String service =  _messageInputStream.readName();
         if (service.length() > 0) {
           rec = new DNSRecord.Pointer(domain, recordClass, unique, ttl, service);
         } else {
@@ -346,11 +345,11 @@ public final class DNSIncoming extends DNSMessage {
               + domain);
         }
         break;
-      case TYPE_TXT:
+      case Type.TXT:
         rec = new DNSRecord.Text(domain, recordClass, unique, ttl,
             _messageInputStream.readBytes(len));
         break;
-      case TYPE_SRV:
+      case Type.SRV:
         int priority = _messageInputStream.readUnsignedShort();
         int weight = _messageInputStream.readUnsignedShort();
         int port = _messageInputStream.readUnsignedShort();
@@ -366,7 +365,7 @@ public final class DNSIncoming extends DNSMessage {
         rec = new DNSRecord.Service(domain, recordClass, unique, ttl, priority, weight, port,
             target);
         break;
-      case TYPE_HINFO:
+      case Type.HINFO:
         StringBuilder buf = new StringBuilder();
         buf.append(_messageInputStream.readUTF(len));
         int index = buf.indexOf(" ");
@@ -374,7 +373,7 @@ public final class DNSIncoming extends DNSMessage {
         String os = (index > 0 ? buf.substring(index + 1) : "").trim();
         rec = new DNSRecord.HostInformation(domain, recordClass, unique, ttl, cpu, os);
         break;
-      case TYPE_OPT:
+      case Type.OPT:
         DNSResultCode extendedResultCode = DNSResultCode.resultCodeForFlags(this.getFlags(), ttl);
         int version = (ttl & 0x00ff0000) >> 16;
         if (version == 0) {

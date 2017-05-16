@@ -17,11 +17,11 @@ import java.util.List;
 import javax.jmdns.NetworkTopologyDiscovery;
 import javax.jmdns.impl.constants.DNSConstants;
 import javax.jmdns.impl.constants.DNSRecordClass;
-import javax.jmdns.impl.constants.DNSRecordType;
 import javax.jmdns.impl.constants.DNSState;
 import javax.jmdns.impl.tasks.DNSTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.Type;
 
 /**
  * HostInfo information on the local host to be able to cope with change of addresses.
@@ -194,12 +194,12 @@ public class HostInfo implements DNSStatefulObject {
     return result;
   }
 
-  DNSRecord.Address getDNSAddressRecord(DNSRecordType type, boolean unique, int ttl) {
+  DNSRecord.Address getDNSAddressRecord(int type, boolean unique, int ttl) {
     switch (type) {
-      case TYPE_A:
+      case Type.A:
         return this.getDNS4AddressRecord(unique, ttl);
-      case TYPE_A6:
-      case TYPE_AAAA:
+      case Type.A6:
+      case Type.AAAA:
         return this.getDNS6AddressRecord(unique, ttl);
       default:
     }
@@ -222,12 +222,12 @@ public class HostInfo implements DNSStatefulObject {
     return null;
   }
 
-  DNSRecord.Pointer getDNSReverseAddressRecord(DNSRecordType type, boolean unique, int ttl) {
+  DNSRecord.Pointer getDNSReverseAddressRecord(int type, boolean unique, int ttl) {
     switch (type) {
-      case TYPE_A:
+      case Type.A:
         return this.getDNS4ReverseAddressRecord(unique, ttl);
-      case TYPE_A6:
-      case TYPE_AAAA:
+      case Type.A6:
+      case Type.AAAA:
         return this.getDNS6ReverseAddressRecord(unique, ttl);
       default:
     }
